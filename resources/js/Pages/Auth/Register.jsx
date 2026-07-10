@@ -99,7 +99,10 @@ function Layout({ children }) {
                 padding: '0 2rem', position: 'sticky', top: 0, zIndex: 50,
             }}>
                 <Logo />
-                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                    <Link href="/" style={{ fontSize: '0.85rem', fontWeight: 600, color: c.inkLight, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                        ← Back to Home
+                    </Link>
                     {['Help Center', 'Emergency'].map(label => (
                         <a key={label} href="#" style={{
                             fontSize: '0.85rem', color: label === 'Emergency' ? c.red : c.inkLight,

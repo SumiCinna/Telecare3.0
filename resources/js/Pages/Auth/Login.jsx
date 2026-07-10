@@ -180,6 +180,17 @@ export default function Login() {
             {/* Page body */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2.5rem 1rem' }}>
 
+                {/* Back to homepage */}
+                <div style={{ width: '100%', maxWidth: '420px', marginBottom: '1rem' }}>
+                    <a
+                        href="/"
+                        onClick={(e) => { e.preventDefault(); router.get('/'); }}
+                        style={{ fontSize: '0.85rem', fontWeight: 600, color: c.inkLight, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                        ← Back to Home
+                    </a>
+                </div>
+
                 {/* Card */}
                 <div style={{
                     background: c.white,
