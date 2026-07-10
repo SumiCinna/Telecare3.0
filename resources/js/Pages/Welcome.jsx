@@ -1,10 +1,41 @@
 import { Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import { colors, fonts } from '../theme';
 
 export default function Welcome() {
+    const [activeSection, setActiveSection] = useState('home');
+
+    useEffect(() => {
+        const sectionIds = ['services', 'telecare-ai', 'visit'];
+
+        const updateActiveSection = () => {
+            const navHeight = 64;
+            const probePoint = window.scrollY + navHeight + 24;
+
+            for (const sectionId of sectionIds) {
+                const section = document.getElementById(sectionId);
+                if (!section) continue;
+
+                const top = section.offsetTop;
+                const bottom = top + section.offsetHeight;
+
+                if (probePoint >= top && probePoint < bottom) {
+                    setActiveSection(sectionId);
+                    return;
+                }
+            }
+
+            setActiveSection(window.scrollY < 160 ? 'home' : sectionIds[sectionIds.length - 1]);
+        };
+
+        updateActiveSection();
+        window.addEventListener('scroll', updateActiveSection, { passive: true });
+        return () => window.removeEventListener('scroll', updateActiveSection);
+    }, []);
+
     return (
         <div style={{ fontFamily: fonts.body, color: colors.ink, background: colors.white }}>
-            <Nav />
+            <Nav activeSection={activeSection} setActiveSection={setActiveSection} />
             <Hero />
             <Services />
             <TeleCareAI />
@@ -15,7 +46,21 @@ export default function Welcome() {
     );
 }
 
-function Nav() {
+// Smooth-scrolls to a section by id, offsetting for the sticky nav height.
+function scrollToSection(e, href, onActivate) {
+    if (!href || !href.startsWith('#')) return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    if (onActivate) {
+        onActivate(href.slice(1));
+    }
+    const navHeight = 64;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
+}
+
+function Nav({ activeSection, setActiveSection }) {
     return (
         <nav style={{
             display: 'flex',
@@ -67,31 +112,34 @@ function Nav() {
             {/* Nav links */}
             <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                 {[
+                    { label: 'Home', href: '/', active: true },
                     { label: 'Services', href: '#services' },
                     { label: 'Tele-Care AI', href: '#telecare-ai' },
                     { label: 'Visit Us', href: '#visit' },
-                    { label: 'Home', href: '/', active: true },
                 ].map((item) => (
                     <a
                         key={item.label}
                         href={item.href}
+                        onClick={(e) => (item.href.startsWith('#') ? scrollToSection(e, item.href, setActiveSection) : setActiveSection('home'))}
                         style={{
                             fontSize: '0.88rem',
-                            color: item.active ? colors.red : colors.inkLight,
-                            fontWeight: item.active ? 600 : 400,
-                            borderBottom: item.active ? `2px solid ${colors.red}` : '2px solid transparent',
+                            color: activeSection === (item.href === '/' ? 'home' : item.href.slice(1)) ? colors.red : colors.inkLight,
+                            fontWeight: activeSection === (item.href === '/' ? 'home' : item.href.slice(1)) ? 600 : 400,
+                            borderBottom: activeSection === (item.href === '/' ? 'home' : item.href.slice(1)) ? `2px solid ${colors.red}` : '2px solid transparent',
                             paddingBottom: '2px',
                             transition: 'color 0.2s, border-color 0.2s',
                             textDecoration: 'none',
                         }}
                         onMouseEnter={(e) => {
-                            if (!item.active) {
+                            const isActive = activeSection === (item.href === '/' ? 'home' : item.href.slice(1));
+                            if (!isActive) {
                                 e.currentTarget.style.color = colors.red;
                                 e.currentTarget.style.borderBottomColor = colors.red;
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!item.active) {
+                            const isActive = activeSection === (item.href === '/' ? 'home' : item.href.slice(1));
+                            if (!isActive) {
                                 e.currentTarget.style.color = colors.inkLight;
                                 e.currentTarget.style.borderBottomColor = 'transparent';
                             }
@@ -187,14 +235,18 @@ function Hero() {
                         <i className="ti ti-calendar-plus" aria-hidden="true" />
                         Book Online Consultation
                     </Link>
-                    <a href="#services" style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                        border: `1.5px solid ${colors.border}`,
-                        color: colors.ink, fontWeight: 500, fontSize: '0.95rem',
-                        padding: '0.8rem 1.5rem', borderRadius: '6px',
-                        background: colors.white,
-                        textDecoration: 'none',
-                    }}>
+                    <a
+                        href="#services"
+                        onClick={(e) => scrollToSection(e, '#services')}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                            border: `1.5px solid ${colors.border}`,
+                            color: colors.ink, fontWeight: 500, fontSize: '0.95rem',
+                            padding: '0.8rem 1.5rem', borderRadius: '6px',
+                            background: colors.white,
+                            textDecoration: 'none',
+                        }}
+                    >
                         View Our Services
                     </a>
                 </div>
@@ -237,7 +289,6 @@ function AIStatusCard() {
                     { icon: 'ti-report-medical', label: 'Smart AI Summaries', color: colors.red },
                     { icon: 'ti-shield-lock', label: 'Secure Digital Records', color: colors.green },
                     { icon: 'ti-scan', label: 'OCR Lab Analysis', color: colors.red },
-                    { icon: 'ti-activity', label: 'Real-time Vitals Tracking', color: colors.green },
                 ].map((item) => (
                     <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                         <i className={`ti ${item.icon}`} style={{ color: item.color, fontSize: '0.9rem' }} />
@@ -621,13 +672,17 @@ function CTABand() {
                 }}>
                     Register Now
                 </Link>
-                <a href="#services" style={{
-                    border: '1.5px solid rgba(255,255,255,0.5)',
-                    color: colors.white, fontWeight: 600, fontSize: '0.97rem',
-                    padding: '0.85rem 2rem', borderRadius: '6px',
-                    display: 'inline-block', background: 'transparent',
-                    textDecoration: 'none',
-                }}>
+                <a
+                    href="#services"
+                    onClick={(e) => scrollToSection(e, '#services')}
+                    style={{
+                        border: '1.5px solid rgba(255,255,255,0.5)',
+                        color: colors.white, fontWeight: 600, fontSize: '0.97rem',
+                        padding: '0.85rem 2rem', borderRadius: '6px',
+                        display: 'inline-block', background: 'transparent',
+                        textDecoration: 'none',
+                    }}
+                >
                     Contact Support
                 </a>
             </div>
@@ -651,21 +706,30 @@ function Footer() {
                         <img
                             src="/images/logo.jpg"
                             alt="Telecare"
-                            style={{
-                                height: '36px', width: '36px', objectFit: 'contain',
-                                filter: 'brightness(0) invert(1)',
-                            }}
+                            style={{ height: '40px', width: '40px', objectFit: 'contain' }}
                         />
                         <div style={{
-                            width: '1px', height: '28px',
-                            background: 'rgba(255,255,255,0.15)',
-                            margin: '0 0.75rem',
+                            width: '1px', height: '32px',
+                            background: colors.border,
+                            margin: '0 0.85rem',
                         }} />
                         <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.88rem', color: colors.white, lineHeight: 1.1, letterSpacing: '0.04em' }}>
+                            <div style={{
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                                color: colors.ink,
+                                lineHeight: 1.1,
+                                letterSpacing: '0.04em',
+                            }}>
                                 TELECARE
                             </div>
-                            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.07em', marginTop: '1px' }}>
+                            <div style={{
+                                fontSize: '0.6rem',
+                                color: colors.inkMuted,
+                                letterSpacing: '0.07em',
+                                fontWeight: 500,
+                                marginTop: '1px',
+                            }}>
                                 MEDICAL SYSTEMS
                             </div>
                         </div>

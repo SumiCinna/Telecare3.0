@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -160,25 +161,17 @@ export default function Login() {
         if (emailE || passE) return;
 
         setProcessing(true);
-        try {
-            // Replace this fetch with your actual login endpoint
-            const res = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' },
-                body: JSON.stringify(formData),
-            });
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                setServerErrors(body.errors || { email: 'Invalid credentials.' });
-            } else {
-                // Redirect on success — adjust path as needed
-                window.location.href = '/dashboard';
-            }
-        } catch {
-            setServerErrors({ email: 'Network error. Please try again.' });
-        } finally {
-            setProcessing(false);
-        }
+        setServerErrors({});
+
+        router.post('/login', formData, {
+            preserveScroll: true,
+            onError: (errors) => {
+                setServerErrors(errors || { email: 'Invalid credentials.' });
+            },
+            onFinish: () => {
+                setProcessing(false);
+            },
+        });
     }
 
     return (
