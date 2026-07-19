@@ -35,9 +35,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        \Illuminate\Support\Facades\Log::info('Inertia share auth', [
+            'user_id' => $user?->id,
+            'user_name' => $user?->name,
+            'user_avatar' => $user?->avatar,
+        ]);
         return [
             ...parent::share($request),
-            //
+            'auth' => [
+                'user' => $user,
+            ],
         ];
     }
 }

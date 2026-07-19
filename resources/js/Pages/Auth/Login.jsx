@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const c = {
@@ -111,6 +111,7 @@ function Footer() {
 
 // ─── Main Login ───────────────────────────────────────────────────────────────
 export default function Login() {
+    const { errors } = usePage().props;
     const [formData, setFormData]       = useState({ email: '', password: '', remember: false });
     const [processing, setProcessing]   = useState(false);
     const [serverErrors, setServerErrors] = useState({});
@@ -120,6 +121,14 @@ export default function Login() {
     const [touched,       setTouched]       = useState({});
     const [emailFocused,  setEmailFocused]  = useState(false);
     const [passFocused,   setPassFocused]   = useState(false);
+
+    const pageError = errors?.email || '';
+
+    useEffect(() => {
+        if (pageError) {
+            setServerErrors({ email: pageError });
+        }
+    }, [pageError]);
 
     const emailErr = serverErrors.email    || (touched.email    ? localErrors.email    : '');
     const passErr  = serverErrors.password || (touched.password ? localErrors.password : '');
@@ -209,6 +218,22 @@ export default function Login() {
                     <p style={{ fontSize: '0.875rem', color: c.inkMuted, textAlign: 'center', margin: '0 0 2rem' }}>
                         Clinical Access Portal for Patients
                     </p>
+
+                    {pageError && (
+                        <div style={{
+                            background: c.redLight,
+                            color: c.red,
+                            padding: '0.75rem 1rem',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            marginBottom: '1.25rem',
+                            textAlign: 'center',
+                            border: `1px solid ${c.redLight}`,
+                        }}>
+                            ⚠ {pageError}
+                        </div>
+                    )}
 
                     {/* Email */}
                     <div style={{ marginBottom: '1.1rem' }}>

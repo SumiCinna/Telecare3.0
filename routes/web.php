@@ -17,6 +17,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -32,15 +34,25 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::get('/patient/dashboard', function () {
-        return Inertia::render('Patient/Dashboard');
+        return Inertia::render('Patient/Dashboard', [
+            'consultations' => [],
+            'stats' => [],
+            'history' => [],
+        ]);
     })->name('patient.dashboard');
 
     Route::get('/patient/schedules', function () {
-        return Inertia::render('Patient/Schedules');
+        return Inertia::render('Patient/Schedules', [
+            'specialties' => [],
+            'specialists' => [],
+        ]);
     })->name('patient.schedules');
 
     Route::get('/patient/care-team', function () {
-        return Inertia::render('Patient/CareTeam');
+        return Inertia::render('Patient/CareTeam', [
+            'team' => [],
+            'notes' => [],
+        ]);
     })->name('patient.care-team');
 
     Route::get('/patient/records', function () {

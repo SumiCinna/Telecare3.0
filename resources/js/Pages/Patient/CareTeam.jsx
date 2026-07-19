@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 const c = {
     red: '#B31217',
@@ -13,11 +13,11 @@ const c = {
     sidebar: '#F3F5FF',
 }
 
-function SideLink({ active, href, icon, children }) {
+function SidebarItem({ active, icon, label }) {
     return (
-        <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1rem', borderRadius: '4px', textDecoration: 'none', color: active ? c.red : c.inkLight, fontSize: '0.86rem', fontWeight: active ? 700 : 500, background: active ? 'linear-gradient(90deg, rgba(179,18,23,0.11), rgba(179,18,23,0.05))' : 'transparent', boxShadow: active ? 'inset 3px 0 0 #B31217' : 'none' }}>
+        <Link href={label === 'Consultations' ? '/patient/dashboard' : label === 'Schedules' ? '/patient/schedules' : label === 'Care Team' ? '/patient/care-team' : label === 'Records' ? '/patient/records' : '/patient/insights'} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', borderRadius: '4px', textDecoration: 'none', color: active ? c.red : c.inkLight, fontSize: '0.86rem', fontWeight: active ? 700 : 500, background: active ? 'linear-gradient(90deg, rgba(179,18,23,0.10), rgba(179,18,23,0.04))' : 'transparent', boxShadow: active ? 'inset 3px 0 0 #B31217' : 'none' }}>
             <span style={{ width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: active ? c.redLight : 'transparent' }}>{icon}</span>
-            {children}
+            {label}
         </Link>
     );
 }
@@ -39,29 +39,35 @@ function TeamCard({ name, role, status, tone = 'green' }) {
     );
 }
 
-export default function CareTeam() {
-    const links = [
-        { href: '/patient/dashboard', label: 'Consultations', icon: '▣' },
-        { href: '/patient/schedules', label: 'Schedules', icon: '🗓' },
-        { href: '/patient/care-team', label: 'Patients', icon: '👥' },
-        { href: '/patient/records', label: 'Records', icon: '▤' },
-        { href: '/patient/insights', label: 'Reports', icon: '▥' },
-    ];
+export default function CareTeam({ team = [], notes = [] }) {
+    const { auth } = usePage().props;
+    const isCareTeam = true;
 
     return (
-        <div style={{ minHeight: '100vh', background: c.bg, display: 'grid', gridTemplateColumns: '210px 1fr', fontFamily: "Inter, Segoe UI, sans-serif", color: c.ink }}>
+        <div style={{ minHeight: '100vh', background: c.bg, display: 'grid', gridTemplateColumns: '240px 1fr', fontFamily: "Inter, Segoe UI, sans-serif", color: c.ink }}>
             <aside style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '0.9rem 1rem', borderBottom: `1px solid ${c.border}` }}>
-                    <div style={{ color: c.red, fontWeight: 900, fontSize: '1rem' }}>TELE-CARE AI</div>
-                    <div style={{ marginTop: '1rem', fontSize: '0.7rem', fontWeight: 700, color: c.inkLight }}>CLINICIAN</div>
-                    <div style={{ color: c.red, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.1 }}>Dr. Richardson</div>
-                    <div style={{ fontSize: '0.74rem', color: c.inkLight }}>Cardiology Unit</div>
+                <div style={{ padding: '1rem 1rem 0.9rem', borderBottom: `1px solid ${c.border}` }}>
+                    <div style={{ color: c.red, fontWeight: 900, fontSize: '1.15rem', letterSpacing: '0.02em' }}>TELE-CARE AI</div>
+                    <div style={{ marginTop: '1rem', fontSize: '0.7rem', fontWeight: 700, color: c.inkLight }}>PATIENT PORTAL</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.35rem' }}>
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${c.border}` }} />
+                        ) : (
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #8FB2D8, #F2C5B5)', border: '1.5px solid #D2D7E0' }} />
+                        )}
+                        <div>
+                            <div style={{ color: c.red, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.1 }}>{auth?.user?.name || 'Patient'}</div>
+                            <div style={{ fontSize: '0.74rem', color: c.inkLight }}>Patient</div>
+                        </div>
+                    </div>
                 </div>
 
                 <nav style={{ padding: '1rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    {links.map((link) => (
-                        <SideLink key={link.href} href={link.href} active={link.href === '/patient/care-team'} icon={link.icon}>{link.label}</SideLink>
-                    ))}
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▣</span>} label="Consultations" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>🗓</span>} label="Schedules" />
+                    <SidebarItem active={isCareTeam} icon={<span style={{ fontSize: '0.72rem' }}>👥</span>} label="Care Team" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▤</span>} label="Records" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▥</span>} label="Health Insights" />
                 </nav>
 
                 <div style={{ marginTop: 'auto', padding: '1rem' }}>
@@ -85,21 +91,29 @@ export default function CareTeam() {
                     </div>
 
                     <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
-                        <TeamCard name="Nurse Ana Santos" role="Care Coordinator" status="ONLINE" tone="green" />
-                        <TeamCard name="Dr. Maria Lopez" role="Primary Physician" status="AVAILABLE" tone="green" />
-                        <TeamCard name="Dr. Kevin Reyes" role="Specialist Consultant" status="AWAY" tone="red" />
+                        {team.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: c.inkLight, fontSize: '0.92rem' }}>
+                                No care team members assigned yet.
+                            </div>
+                        ) : (
+                            team.map((member) => (
+                                <TeamCard key={member.id} {...member} />
+                            ))
+                        )}
                     </div>
 
                     <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem' }}>
                         <section style={{ background: c.white, border: `1px solid ${c.border}`, borderRadius: 12, padding: '1rem' }}>
                             <div style={{ fontWeight: 800, marginBottom: '0.75rem' }}>Team Notes</div>
-                            {[
-                                'Follow up on lab results on Thursday.',
-                                'Patient education packet sent via portal.',
-                                'Schedule medication review after next consult.',
-                            ].map((note) => (
-                                <div key={note} style={{ padding: '0.75rem 0', borderTop: `1px solid ${c.border}`, color: c.inkLight }}>{note}</div>
-                            ))}
+                            {notes.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '1.5rem', color: c.inkLight, fontSize: '0.9rem' }}>
+                                    No notes yet.
+                                </div>
+                            ) : (
+                                notes.map((note) => (
+                                    <div key={note.id} style={{ padding: '0.75rem 0', borderTop: `1px solid ${c.border}`, color: c.inkLight }}>{note.content}</div>
+                                ))
+                            )}
                         </section>
 
                         <section style={{ background: c.white, border: `1px solid ${c.border}`, borderRadius: 12, padding: '1rem' }}>

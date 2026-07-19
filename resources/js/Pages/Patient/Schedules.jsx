@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 const c = {
     red: '#B31217',
@@ -13,21 +13,6 @@ const c = {
     bg: '#F7F7FC',
     white: '#FFFFFF',
     sidebar: '#F4F6FF',
-}
-
-function SideLink({ active, href, icon, children }) {
-    return (
-        <Link href={href} style={{
-            display: 'flex', alignItems: 'center', gap: '0.75rem',
-            padding: '0.8rem 1rem', borderRadius: '4px', textDecoration: 'none',
-            color: active ? c.red : c.inkLight, fontSize: '0.86rem', fontWeight: active ? 700 : 500,
-            background: active ? 'linear-gradient(90deg, rgba(179,18,23,0.11), rgba(179,18,23,0.05))' : 'transparent',
-            boxShadow: active ? 'inset 3px 0 0 #B31217' : 'none',
-        }}>
-            <span style={{ width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: active ? c.redLight : 'transparent' }}>{icon}</span>
-            {children}
-        </Link>
-    );
 }
 
 function SelectField({ label, children }) {
@@ -70,25 +55,44 @@ function SpecialistCard({ name, specialty, price, rating, desc, badge, tone = 'g
     );
 }
 
-export default function Schedules() {
-    const specialties = ['Pediatrics', 'OB-GYNE', 'Internal Medicine', 'Cardiology', 'Psychiatry'];
+function SidebarItem({ active, icon, label }) {
+    return (
+        <Link href={label === 'Consultations' ? '/patient/dashboard' : label === 'Schedules' ? '/patient/schedules' : label === 'Care Team' ? '/patient/care-team' : label === 'Records' ? '/patient/records' : '/patient/insights'} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem', borderRadius: '4px', textDecoration: 'none', color: active ? c.red : c.inkLight, fontSize: '0.86rem', fontWeight: active ? 700 : 500, background: active ? 'linear-gradient(90deg, rgba(179,18,23,0.10), rgba(179,18,23,0.04))' : 'transparent', boxShadow: active ? 'inset 3px 0 0 #B31217' : 'none' }}>
+            <span style={{ width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: active ? c.redLight : 'transparent' }}>{icon}</span>
+            {label}
+        </Link>
+    );
+}
+
+export default function Schedules({ specialties = [], specialists = [] }) {
+    const { auth } = usePage().props;
+    const isSchedules = true;
 
     return (
-        <div style={{ minHeight: '100vh', background: c.bg, display: 'grid', gridTemplateColumns: '210px 1fr', fontFamily: "Inter, Segoe UI, sans-serif", color: c.ink }}>
+        <div style={{ minHeight: '100vh', background: c.bg, display: 'grid', gridTemplateColumns: '240px 1fr', fontFamily: "Inter, Segoe UI, sans-serif", color: c.ink }}>
             <aside style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '0.9rem 1rem', borderBottom: `1px solid ${c.border}` }}>
-                    <div style={{ color: c.red, fontWeight: 900, fontSize: '1rem' }}>TELE-CARE AI</div>
-                    <div style={{ marginTop: '1rem', fontSize: '0.7rem', fontWeight: 700, color: c.inkLight }}>CLINICIAN</div>
-                    <div style={{ color: c.red, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.1 }}>Dr. Richardson</div>
-                    <div style={{ fontSize: '0.74rem', color: c.inkLight }}>Cardiology Unit</div>
+                <div style={{ padding: '1rem 1rem 0.9rem', borderBottom: `1px solid ${c.border}` }}>
+                    <div style={{ color: c.red, fontWeight: 900, fontSize: '1.15rem', letterSpacing: '0.02em' }}>TELE-CARE AI</div>
+                    <div style={{ marginTop: '1rem', fontSize: '0.7rem', fontWeight: 700, color: c.inkLight }}>PATIENT PORTAL</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.35rem' }}>
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${c.border}` }} />
+                        ) : (
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #8FB2D8, #F2C5B5)', border: '1.5px solid #D2D7E0' }} />
+                        )}
+                        <div>
+                            <div style={{ color: c.red, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.1 }}>{auth?.user?.name || 'Patient'}</div>
+                            <div style={{ fontSize: '0.74rem', color: c.inkLight }}>Patient</div>
+                        </div>
+                    </div>
                 </div>
 
                 <nav style={{ padding: '1rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    <SideLink href="/patient/dashboard" icon="▣">Consultations</SideLink>
-                    <SideLink active href="/patient/schedules" icon="🗓">Schedules</SideLink>
-                    <SideLink href="/patient/care-team" icon="👥">Patients</SideLink>
-                    <SideLink href="/patient/records" icon="▤">Records</SideLink>
-                    <SideLink href="/patient/insights" icon="▥">Reports</SideLink>
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▣</span>} label="Consultations" />
+                    <SidebarItem active={isSchedules} icon={<span style={{ fontSize: '0.72rem' }}>🗓</span>} label="Schedules" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>👥</span>} label="Care Team" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▤</span>} label="Records" />
+                    <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>▥</span>} label="Health Insights" />
                 </nav>
 
                 <div style={{ marginTop: 'auto', padding: '1rem' }}>
@@ -109,7 +113,12 @@ export default function Schedules() {
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                        <span>🔔</span><span>⚙</span><div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #f0b8b0, #6fb1d1)' }} />
+                        <span>🔔</span><span>⚙</span>
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Profile" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', border: '2px solid #D2D7E0' }} />
+                        ) : (
+                            <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #f0b8b0, #6fb1d1)' }} />
+                        )}
                     </div>
                 </header>
 
@@ -141,9 +150,13 @@ export default function Schedules() {
                         <div style={{ borderTop: `1px solid ${c.border}`, padding: '0.9rem 1rem 1rem' }}>
                             <div style={{ fontSize: '0.72rem', color: c.inkLight, fontWeight: 800, marginBottom: '0.5rem' }}>COMMON SPECIALTIES</div>
                             <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap' }}>
-                                {specialties.map((specialty, index) => (
-                                    <button key={specialty} style={{ background: index === 0 ? '#8EE8A7' : '#E1E8FB', color: index === 0 ? '#216B3A' : '#4D5A7A', border: `1px solid ${index === 0 ? '#7FD491' : '#C3CFEF'}`, borderRadius: 9, padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}>{specialty}</button>
-                                ))}
+                                {specialties.length === 0 ? (
+                                    <span style={{ color: c.inkLight, fontSize: '0.85rem' }}>No specialties available.</span>
+                                ) : (
+                                    specialties.map((specialty, index) => (
+                                        <button key={specialty} style={{ background: index === 0 ? '#8EE8A7' : '#E1E8FB', color: index === 0 ? '#216B3A' : '#4D5A7A', border: `1px solid ${index === 0 ? '#7FD491' : '#C3CFEF'}`, borderRadius: 9, padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}>{specialty}</button>
+                                    ))
+                                )}
                             </div>
 
                             <div style={{ marginTop: '1rem', border: `1px solid ${c.border}`, borderRadius: 8, overflow: 'hidden' }}>
@@ -163,14 +176,20 @@ export default function Schedules() {
                     </section>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '1.2rem 0 0.75rem' }}>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Available Specialists (12)</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Available Specialists ({specialists.length})</h2>
                         <span style={{ fontSize: '0.8rem', color: c.inkLight }}>Sort by: <span style={{ color: c.red, fontWeight: 700 }}>Recommended</span></span>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
-                        <SpecialistCard name="Dr. Elena Rodriguez" specialty="Pediatrics" price="120.00" rating="4.9" desc="Expert in adolescent health and preventative care with over 15 years of experience." badge="VERIFIED CLINICIAN" tone="green" />
-                        <SpecialistCard name="Dr. Marcus Thorne" specialty="OB-GYNE" price="150.00" rating="4.8" desc="Specializing in high-risk pregnancies and maternal-fetal medicine. Dedicated to personalized care." badge="AVAILABLE TOMORROW" tone="red" />
-                        <SpecialistCard name="Dr. Sarah Jenkins" specialty="Internal Medicine" price="110.00" rating="5.0" desc="Focused on chronic disease management and diagnostic medicine for adults of all ages." badge="VERIFIED CLINICIAN" tone="green" />
+                        {specialists.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: c.inkLight, fontSize: '0.92rem' }}>
+                                No specialists available.
+                            </div>
+                        ) : (
+                            specialists.map((item) => (
+                                <SpecialistCard key={item.id} {...item} />
+                            ))
+                        )}
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>

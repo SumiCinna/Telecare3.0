@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 const c = {
     red: '#B31217',
@@ -173,20 +173,29 @@ function ConsultationCard({ status, statusColor, statusBg, time, doctor, special
     )
 }
 
-export default function Dashboard() {
+export default function Dashboard({ consultations = [], stats = [], history = [] }) {
+    const { auth } = usePage().props;
+
     return (
         <div style={{ minHeight: '100vh', background: c.bg, color: c.ink, display: 'grid', gridTemplateColumns: '240px 1fr', fontFamily: "Inter, Segoe UI, sans-serif" }}>
             <aside style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
                 <div style={{ padding: '1rem 1rem 0.9rem', borderBottom: `1px solid ${c.border}` }}>
                     <div style={{ color: c.red, fontWeight: 900, fontSize: '1.15rem', letterSpacing: '0.02em' }}>TELE-CARE AI</div>
+                    <div style={{ marginTop: '1rem', fontSize: '0.7rem', fontWeight: 700, color: c.inkLight }}>PATIENT PORTAL</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.35rem' }}>
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${c.border}` }} />
+                        ) : (
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #8FB2D8, #F2C5B5)', border: '1.5px solid #D2D7E0' }} />
+                        )}
+                        <div>
+                            <div style={{ color: c.red, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.1 }}>{auth?.user?.name || 'Patient'}</div>
+                            <div style={{ fontSize: '0.74rem', color: c.inkLight }}>Patient</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style={{ padding: '0.75rem 1rem 1rem' }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: c.ink, lineHeight: 1.3 }}>Patient Portal</div>
-                    <div style={{ fontSize: '0.8rem', color: c.inkLight }}>John Doe</div>
-                </div>
-
-                <nav style={{ padding: '0 0.65rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <nav style={{ padding: '1rem 0.6rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                     <SidebarItem active icon={<span style={{ fontSize: '0.72rem' }}>▣</span>} label="Consultations" />
                     <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>🗓</span>} label="Schedules" />
                     <SidebarItem icon={<span style={{ fontSize: '0.72rem' }}>👥</span>} label="Care Team" />
@@ -259,7 +268,11 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: c.inkLight, flexShrink: 0 }}>
                         <span style={{ fontSize: '1rem' }}>🔔</span>
                         <span style={{ fontSize: '1rem' }}>⚙</span>
-                        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #8FB2D8, #F2C5B5)', border: '2px solid #D2D7E0' }} />
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Profile" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', border: '2px solid #D2D7E0' }} />
+                        ) : (
+                            <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #8FB2D8, #F2C5B5)', border: '2px solid #D2D7E0' }} />
+                        )}
                     </div>
                 </header>
 
@@ -297,37 +310,27 @@ export default function Dashboard() {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
-                        <ConsultationCard
-                            status="In Progress"
-                            statusColor={c.red}
-                            statusBg={c.redLight}
-                            time="Started 5 mins ago"
-                            doctor="Dr. Elena Rodriguez"
-                            specialty="Senior Pediatrician"
-                            date="Today, 10:30 AM"
-                            type="Video Call"
-                            primaryLabel="Join Meeting"
-                            secondaryLabel="Reschedule"
-                        />
-                        <ConsultationCard
-                            status="Scheduled"
-                            statusColor={c.green}
-                            statusBg={c.greenLight}
-                            time="In 3 days"
-                            doctor="Dr. James Richardson"
-                            specialty="Interventional Cardiology"
-                            date="Oct 24, 2:15 PM"
-                            type="In-Person (Room 402)"
-                            primaryLabel="View Preparation"
-                            secondaryLabel="Reschedule"
-                        />
+                        {consultations.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: c.inkLight, fontSize: '0.92rem' }}>
+                                No consultations yet.
+                            </div>
+                        ) : (
+                            consultations.map((item) => (
+                                <ConsultationCard key={item.id} {...item} />
+                            ))
+                        )}
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.9rem' }}>
-                        <StatPill color={c.red} label="Upcoming" value="04" icon={<span style={{ fontSize: '0.72rem' }}>📅</span>} />
-                        <StatPill color={c.green} label="Completed" value="18" icon={<span style={{ fontSize: '0.72rem' }}>✓</span>} />
-                        <StatPill color={c.red} label="Notes Ready" value="07" icon={<span style={{ fontSize: '0.72rem' }}>▤</span>} />
-                        <StatPill color={c.green} label="Care Team" value="06" icon={<span style={{ fontSize: '0.72rem' }}>👥</span>} />
+                        {stats.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '1rem', color: c.inkLight, fontSize: '0.9rem' }}>
+                                No stats available.
+                            </div>
+                        ) : (
+                            stats.map((item) => (
+                                <StatPill key={item.label} {...item} />
+                            ))
+                        )}
                     </div>
 
                     <section style={{ marginTop: '0.25rem' }}>
@@ -345,21 +348,24 @@ export default function Dashboard() {
                                 <div>Actions</div>
                             </div>
 
-                            {[
-                                ['Oct 12, 2024', 'Dr. Sarah Chen', 'Routine Checkup', 'Completed'],
-                                ['Sept 28, 2024', 'Dr. Marcus Thorne', 'Consultation', 'Completed'],
-                            ].map((row) => (
-                                <div key={row[0]} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.2fr 1fr 0.8fr 0.7fr', gap: '0.75rem', padding: '0.95rem 1rem', fontSize: '0.86rem', borderBottom: `1px solid ${c.border}`, alignItems: 'center' }}>
-                                    <div>{row[0]}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontWeight: 600 }}>
-                                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #89A9C8, #D4E3F5)' }} />
-                                        {row[1]}
-                                    </div>
-                                    <div>{row[2]}</div>
-                                    <div><span style={{ background: c.greenLight, color: c.green, padding: '0.22rem 0.5rem', borderRadius: 3, fontSize: '0.75rem', fontWeight: 700 }}>{row[3]}</span></div>
-                                    <a href="#" style={{ color: c.red, textDecoration: 'none', fontWeight: 700, justifySelf: 'start' }}>View Notes</a>
+                            {history.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: c.inkLight, fontSize: '0.92rem' }}>
+                                    No history records yet.
                                 </div>
-                            ))}
+                            ) : (
+                                history.map((row) => (
+                                    <div key={row.date} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.2fr 1fr 0.8fr 0.7fr', gap: '0.75rem', padding: '0.95rem 1rem', fontSize: '0.86rem', borderBottom: `1px solid ${c.border}`, alignItems: 'center' }}>
+                                        <div>{row.date}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontWeight: 600 }}>
+                                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #89A9C8, #D4E3F5)' }} />
+                                            {row.clinician}
+                                        </div>
+                                        <div>{row.type}</div>
+                                        <div><span style={{ background: c.greenLight, color: c.green, padding: '0.22rem 0.5rem', borderRadius: 3, fontSize: '0.75rem', fontWeight: 700 }}>{row.status}</span></div>
+                                        <a href="#" style={{ color: c.red, textDecoration: 'none', fontWeight: 700, justifySelf: 'start' }}>View Notes</a>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </section>
 

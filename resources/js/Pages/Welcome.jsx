@@ -120,7 +120,15 @@ function Nav({ activeSection, setActiveSection }) {
                     <a
                         key={item.label}
                         href={item.href}
-                        onClick={(e) => (item.href.startsWith('#') ? scrollToSection(e, item.href, setActiveSection) : setActiveSection('home'))}
+                        onClick={(e) => {
+                            if (item.href.startsWith('#')) {
+                                scrollToSection(e, item.href, setActiveSection);
+                            } else if (item.href === '/') {
+                                e.preventDefault();
+                                setActiveSection('home');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                        }}
                         style={{
                             fontSize: '0.88rem',
                             color: activeSection === (item.href === '/' ? 'home' : item.href.slice(1)) ? colors.red : colors.inkLight,
@@ -156,9 +164,27 @@ function Nav({ activeSection, setActiveSection }) {
                     fontSize: '0.88rem',
                     fontWeight: 500,
                     color: colors.ink,
-                    padding: '0.5rem 1.1rem',
+                    padding: '0.55rem 1.3rem',
+                    border: `1.5px solid ${colors.border}`,
+                    borderRadius: '5px',
+                    display: 'inline-block',
                     textDecoration: 'none',
-                }}>
+                    background: colors.white,
+                    transition: 'all 0.25s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = colors.red;
+                    e.currentTarget.style.color = colors.red;
+                    e.currentTarget.style.background = colors.redLight;
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = colors.border;
+                    e.currentTarget.style.color = colors.ink;
+                    e.currentTarget.style.background = colors.white;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                >
                     Login
                 </Link>
                 <Link href="/register" style={{
@@ -170,7 +196,20 @@ function Nav({ activeSection, setActiveSection }) {
                     borderRadius: '5px',
                     display: 'inline-block',
                     textDecoration: 'none',
-                }}>
+                    transition: 'all 0.25s ease',
+                    boxShadow: '0 2px 8px rgba(192,57,43,0.25)',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.background = colors.redDark;
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(192,57,43,0.35)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = colors.red;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(192,57,43,0.25)';
+                }}
+                >
                     Register
                 </Link>
             </div>
